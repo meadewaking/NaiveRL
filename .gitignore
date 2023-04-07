@@ -1,0 +1,4 @@
+*.npy
+*.pth
+.idea/
+algorithm/experiment/PPO_human_pre/tools/manual_model_600
