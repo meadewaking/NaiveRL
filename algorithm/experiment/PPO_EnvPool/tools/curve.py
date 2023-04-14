@@ -9,8 +9,8 @@ step = 20
 
 
 def single(curve, name, color):
-    plt.plot(range(len(curve)), curve, color, alpha=0.2)
-    plt.plot(range(len(curve)), np.convolve(curve, np.ones(step) / step)[:-step + 1], color, label=name)
+    plt.plot(curve, color, alpha=0.2)
+    plt.plot(np.convolve(curve, np.ones(step) / step, mode='same')[:-step], color, label=name)
 
 
 single(test_1, 'test_1', 'red')
