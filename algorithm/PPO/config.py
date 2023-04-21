@@ -9,6 +9,8 @@ config = {
     'lambda': 0.95,
     'train_loop': 3,
     'sample_steps': 32,
+    'batch': 32,
+    'horizon': 128,
 
     'learning_rate': 1e-3,
     'epsilon_clip': 0.1,

@@ -20,7 +20,7 @@ def main():
 
         while not done:
             states, actions, rewards = [], [], []
-            for t in range(config['sample_steps']):
+            for t in range(config['horizon']):
                 # env.render()
                 a = PPO_agent.sample(s)
                 s_, r, done, info = env.step(a)
@@ -29,6 +29,8 @@ def main():
                 rewards.append(r)
                 s = s_
                 score += r
+                if done:
+                    break
 
             PPO_agent.learn(states, actions, rewards, s_, done)
 
