@@ -9,11 +9,14 @@ config = {
     'lambda': 0.95,
     'train_loop': 3,
     'sample_batch_steps': 64,
+    'batch': 32,
+    'horizon': 128,
 
-    'learning_rate': 2e-5,
+    'learning_rate': 1e-5,
     'epsilon_clip': 0.1,
     'entropy_coeff': -0.01,
     'vf_loss_coeff': 0.5,
 
-    'alpha': 0.1
+    'alpha': 0.1,
+    'alpha_ed': 0.9999
 }

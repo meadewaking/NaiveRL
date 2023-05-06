@@ -28,7 +28,7 @@ def main():
 
         while not done:
             states, actions, rewards = [], [], []
-            for t in range(config['sample_batch_steps']):
+            for t in range(config['horizon']):
                 # env.render()
                 a = PPO_agent.sample(s_shadow)
                 s_, r, done, info = env.step(a)
@@ -37,6 +37,8 @@ def main():
                 rewards.append(r)
                 s_shadow = image_process.StackNext(s_)
                 score += r
+                if done:
+                    break
 
             PPO_agent.learn(states, actions, rewards, s_shadow, done)
         scores.append(score)
