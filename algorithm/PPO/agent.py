@@ -24,5 +24,5 @@ class Agent():
         rewards = np.expand_dims(rewards, 1)
         s_ = torch.tensor(s_, device=self.device, dtype=torch.float)
         # loss = self.alg.learn(states, actions, rewards, s_, done)
-        loss = self.alg.learn_v3(states, actions, rewards, s_, done)
+        loss = self.alg.learn_v4(states, actions, rewards, s_, done)
         return loss.item()

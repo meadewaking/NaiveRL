@@ -43,7 +43,7 @@ def main():
             PPO_agent.learn(states, actions, rewards, s_shadow, done)
         scores.append(score)
         if episode % 10 == 0:
-            np.save('../tools/frozen_feature.npy', np.array(scores))
+            np.save('../tools/test.npy', np.array(scores))
         if episode % 100 == 0:
             torch.save(PPO_model, '../tools/ppo.pth')
         print("episode :{}, score : {}, alpha : {}".format(episode, score, PPO_agent.alg.alpha))

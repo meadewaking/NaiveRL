@@ -17,7 +17,7 @@ def single(curve, name, color):
 
 single(test_1, 'scratch', 'red')
 single(test_2, 'human_pre', 'green')
-single(test_3, 'frozen_feature', 'brown')
+single(test_3, 'full_cnn', 'brown')
 plt.axhline(35, linestyle='--', color='b', label='human')
 plt.axhline(100, linestyle='--', color='black', label='expert')
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 中文字体设置

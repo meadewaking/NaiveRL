@@ -21,6 +21,8 @@ class Alg():
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
         self.old_pi = copy.deepcopy(model)
+        self.buffer = []
+        self.buffer_size = 3
 
     def learn(self, states, actions, rewards, s_, done):
         for i in range(config['train_loop']):
@@ -122,6 +124,87 @@ class Alg():
                 batch_actions = actions
                 batch_advantage = advantage
                 batch_td_target = td_target
+
+            old_pi, old_values = self.old_pi.pi_v(batch_states)
+            pi, values = self.model.pi_v(batch_states)
+
+            # 计算策略比例和损失函数
+            pi_a = pi.gather(1, batch_actions)
+            old_pi_a = old_pi.gather(1, batch_actions)
+            ratio = pi_a / (old_pi_a + 1e-8)
+            surr1 = ratio * batch_advantage
+            surr2 = torch.clamp(ratio, 1 - config['epsilon_clip'], 1 + config['epsilon_clip']) * batch_advantage
+            policy_loss = -torch.min(surr1, surr2).mean()
+            # 计算值函数损失
+            value_clip = old_values + (values - old_values).clamp(
+                -config['epsilon_clip'], config['epsilon_clip'])
+            v_loss1 = (values - batch_td_target).pow(2)
+            v_loss2 = (value_clip - batch_td_target).pow(2)
+            value_loss = torch.max(v_loss1, v_loss2).mean()
+            # 计算熵正则化损失
+            entropy_loss = (-torch.log(pi + 1e-8) * torch.exp(torch.log(pi + 1e-8))).mean()
+            loss = policy_loss + self.vf_loss_coeff * value_loss + self.entropy_coeff * entropy_loss
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 5)
+            self.optimizer.step()
+
+        self.old_pi.load_state_dict(self.model.state_dict())
+        return loss
+
+    def learn_v4(self, states, actions, rewards, s_, done):
+        # 将当前转换存储到缓冲区
+        self.buffer.append((states, actions, rewards, s_, done))
+
+        # 如果缓冲区未达到指定大小，则直接返回，不进行学习
+        if len(self.buffer) < self.buffer_size:
+            return torch.tensor(0)
+        else:
+            all_states, all_actions, all_advantage, all_td_target = [], [], [], []
+            for data in self.buffer:
+                states, actions, rewards, s_, done = data
+                # 如果已经到达终止状态，那么回报为0，否则使用旧的价值网络估计回报
+                R = 0.0 if done else self.old_pi.v(s_).item()
+                with torch.no_grad():
+                    old_values = self.old_pi.v(states)
+                r_lst = np.clip(rewards, -1, 1)
+                temp_values = old_values.cpu().detach().numpy()
+                # 计算广义优势估计
+                tds = r_lst + self.gamma * np.append(temp_values[1:], [[R]], axis=0) - temp_values
+                advantage = signal.lfilter([1.0], [1.0, -self.gamma * self.lam], tds[::-1])[::-1]
+                td_target = advantage + temp_values
+                advantage = torch.tensor(advantage.copy(), dtype=torch.float).to(self.device)
+                td_target = torch.tensor(td_target.copy(), dtype=torch.float).to(self.device)
+                all_states.append(states)
+                all_actions.append(actions)
+                all_advantage.append(advantage)
+                all_td_target.append(td_target)
+            states = torch.cat(all_states, dim=0)
+            actions = torch.cat(all_actions, dim=0)
+            advantage = torch.cat(all_advantage, dim=0)
+            td_target = torch.cat(all_td_target, dim=0)
+            self.buffer = []
+        # 迭代多次更新模型参数
+        num_samples = actions.shape[0]
+        indices = np.arange(num_samples)
+        np.random.shuffle(indices)
+
+        batch_size = config['batch']
+        num_batches = max(num_samples // batch_size, 1)
+
+        for i in range(config['train_loop'] * num_batches):
+            # 顺序选择批次
+            batch_idx = i % num_batches
+            start_idx = batch_idx * batch_size
+            end_idx = min((batch_idx + 1) * batch_size, num_samples)
+            batch_indices = indices[start_idx:end_idx]
+
+            # 从数据集中提取批次数据
+            batch_states = states[batch_indices]
+            batch_actions = actions[batch_indices]
+            batch_advantage = advantage[batch_indices]
+            batch_td_target = td_target[batch_indices]
 
             old_pi, old_values = self.old_pi.pi_v(batch_states)
             pi, values = self.model.pi_v(batch_states)
