@@ -11,13 +11,13 @@ config = {
     'batch': 16,
     'horizon': 32,
 
-    'learning_rate': 1e-5,
+    'learning_rate': 1e-6,
     'epsilon_clip': 0.1,
-    'entropy_coeff': -0.01,
+    'entropy_coeff': -0.02,
     'vf_loss_coeff': 0.5,
 
     'prompts': ['获得高分'],
     'tokenizer_path': 'tinyllama/tokenizer.model',
     'llm_path': 'tinyllama/model.safetensors',
-    'max_text_len': 20
+    'max_text_len': 6
 }

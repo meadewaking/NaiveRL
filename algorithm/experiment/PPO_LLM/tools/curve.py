@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 total_len = 10000
-test_1 = np.load('res50_scratch.npy')
-test_2 = np.load('scores.npy')[:total_len]
+# test_1 = np.load('res50_scratch.npy')
+# test_2 = np.load('scores.npy')[:total_len]
 test_3 = np.load('llarp.npy')
 step = 30
 
@@ -16,8 +16,8 @@ def single(curve, name, color):
                     mode='valid'), color, label=name)
 
 
-single(test_1, 'res50_scratch', 'red')
-single(test_2, 'mlp_scratch', 'green')
+# single(test_1, 'res50_scratch', 'red')
+# single(test_2, 'mlp_scratch', 'green')
 single(test_3, 'llarp', 'brown')
 plt.axhline(35, linestyle='--', color='b', label='human')
 plt.axhline(100, linestyle='--', color='black', label='expert')

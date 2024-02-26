@@ -1,3 +1,4 @@
+import os
 import gym
 import numpy as np
 import torch
@@ -11,12 +12,16 @@ from atari_util import ImageProcess
 def main():
     env = gym.make(config['env_name'])
     PPO_model = Model()
+    if os.path.exists('tools/ppo.pth'):
+        PPO_model.load_state_dict(torch.load('tools/ppo.pth').state_dict())
     PPO_alg = Alg(PPO_model)
     PPO_agent = Agent(PPO_alg)
     image_process = ImageProcess()
     scores = []
+    if os.path.exists('tools/llarp.npy'):
+        scores = np.load('tools/llarp.npy').tolist()
 
-    for episode in range(1, config['max_episode']):
+    for episode in range(len(scores)+1, config['max_episode']):
         score = 0.0
         s = env.reset()
         done = False
@@ -25,7 +30,7 @@ def main():
         while not done:
             states, actions, rewards = [], [], []
             for t in range(config['horizon']):
-                env.render()
+                # env.render()
                 a = PPO_agent.sample(s_shadow)
                 s_, r, done, info = env.step(a)
                 states.append(s_shadow)

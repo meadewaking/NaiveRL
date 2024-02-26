@@ -112,7 +112,6 @@ class Alg():
         prob = self.old_pi.pi(txt, img).cpu()
         m = Categorical(prob)
         action = m.sample().item()
-
         return action
 
     def predict(self, txt, img):
