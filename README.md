@@ -23,6 +23,7 @@
 | A3C | Asynchronous A2C |
 | PPO | Proximal Policy Optimization |
 | **PPO-refine** | Optimized PPO (new!) |
+| IMPALA | V-trace Actor-Learner |
 | PPO_human_pre | PPO with VGG16 |
 | D3QN | Double Dueling DQN |
 | DDPG | Deep Deterministic PG |
