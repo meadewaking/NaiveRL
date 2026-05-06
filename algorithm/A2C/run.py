@@ -7,6 +7,20 @@ from config import config
 import torch.multiprocessing as mp
 
 
+def reset_env(env):
+    result = env.reset()
+    return result[0] if isinstance(result, tuple) else result
+
+
+def step_env(env, action):
+    result = env.step(action)
+    if len(result) == 5:
+        state, reward, terminated, truncated, info = result
+        return state, reward, terminated or truncated, terminated, info
+    state, reward, done, info = result
+    return state, reward, done, done, info
+
+
 def train(global_model):
     local_model = Model()
     local_alg = Alg(local_model)
@@ -19,16 +33,16 @@ def train(global_model):
     env = gym.make(config['env_name'])
     score = 0
     done = False
-    s = env.reset()
+    s = reset_env(env)
     states, actions, rewards, mask_lst = [], [], [], []
     while not done:
         a = local_agent.sample(s)
-        s_, r, done, info = env.step(a)
+        s_, r, done, terminal, info = step_env(env, a)
 
         states.append(s)
         actions.append(a)
         rewards.append(r)
-        mask_lst.append(1 - done)
+        mask_lst.append(1 - terminal)
         s = s_
         score += r
 
@@ -55,6 +69,6 @@ if __name__ == '__main__':
             states += (g.get()[1])
             actions += (g.get()[2])
             rewards += (g.get()[3])
-            mask_lst += (g.get()[3])
+            mask_lst += (g.get()[4])
         print("episode :{}, score : {}".format(episode, sum(scores)/config['actor_num']))
         global_agent.learn(states, actions, rewards, mask_lst)

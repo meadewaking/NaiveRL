@@ -1,6 +1,6 @@
 config = {
 
-    'env_name': 'Pendulum-v0',
+    'env_name': 'Pendulum-v1',
     'act_dim': 1,
     'state_dim': 3,
     'action_scale': 2,

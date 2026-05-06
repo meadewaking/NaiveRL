@@ -5,6 +5,19 @@ from agent import Agent
 from config import config
 
 
+def reset_env(env):
+    result = env.reset()
+    return result[0] if isinstance(result, tuple) else result
+
+
+def step_env(env, action):
+    result = env.step(action)
+    if len(result) == 5:
+        state, reward, terminated, truncated, info = result
+        return state, reward, terminated or truncated, info
+    return result
+
+
 def main():
     env = gym.make(config['env_name'])
     PG_model = Model()
@@ -13,14 +26,14 @@ def main():
 
     for episode in range(config['max_episode']):
         score = 0.0
-        s = env.reset()
+        s = reset_env(env)
         done = False
         states, actions, rewards = [], [], []
 
         while not done:
             # env.render()
             a = PG_agent.sample(s)
-            s_, r, done, info = env.step(a)
+            s_, r, done, info = step_env(env, a)
             states.append(s)
             actions.append(a)
             rewards.append(r)

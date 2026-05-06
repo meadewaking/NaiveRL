@@ -6,10 +6,10 @@ from torch.distributions import Normal
 from config import config
 
 class Alg():
-    def __init__(self, actor, critic):
+    def __init__(self, actor, critic_1, critic_2=None):
         self.actor = actor
-        self.critic_1 = critic
-        self.critic_2 = critic
+        self.critic_1 = critic_1
+        self.critic_2 = copy.deepcopy(critic_1) if critic_2 is None else critic_2
         self.target_critic_1 = copy.deepcopy(self.critic_1)
         self.target_critic_2 = copy.deepcopy(self.critic_2)
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -50,6 +50,7 @@ class Alg():
     def learn(self, states, actions, rewards, next_states, done):
         with torch.no_grad():
             next_act, next_log_pi = self.sample(next_states)
+            next_act = next_act * config['action_scale']
             q1_next = self.target_critic_1(next_states, next_act)
             q2_next = self.target_critic_2(next_states, next_act)
             target_Q = torch.min(q1_next, q2_next) - self.alpha * next_log_pi
@@ -60,13 +61,14 @@ class Alg():
         critic_1_loss.backward()
         self.critic_1_optimizer.step()
 
-        q2 = self.critic_1(states, actions)
+        q2 = self.critic_2(states, actions)
         critic_2_loss = self.mse_loss(q2, target_Q)
         self.critic_2_optimizer.zero_grad()
         critic_2_loss.backward()
         self.critic_2_optimizer.step()
 
         acts, log_pi = self.sample(states)
+        acts = acts * config['action_scale']
         q1_pi = self.critic_1(states, acts)
         q2_pi = self.critic_2(states, acts)
         min_q_pi = torch.min(q1_pi, q2_pi)

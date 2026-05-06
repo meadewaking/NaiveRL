@@ -22,6 +22,7 @@ def main():
 
         while not done:
             states, actions, rewards = [], [], []
+            terminal = False
             for t in range(config['horizon']):
                 a = PPO_agent.sample(s)
                 result = env.step(a)
@@ -29,8 +30,10 @@ def main():
                 if len(result) == 5:
                     s_, r, terminated, truncated, info = result
                     done = terminated or truncated
+                    terminal = terminated
                 else:
                     s_, r, done, info = result
+                    terminal = done
                 if isinstance(s_, tuple):
                     s_ = s_[0]
                 states.append(s)
@@ -41,7 +44,7 @@ def main():
                 if done:
                     break
 
-            PPO_agent.learn(states, actions, rewards, s_, done)
+            PPO_agent.learn(states, actions, rewards, s_, terminal)
 
         print("episode :{}, score : {}".format(episode, score))
 

@@ -34,7 +34,8 @@ class Alg():
         return [action]
 
     def learn(self, states, actions, rewards, next_states, done):
-        target_Q = rewards + self.gamma * self.target_critic(next_states, self.target_actor(next_states)) * (1 - done)
+        with torch.no_grad():
+            target_Q = rewards + self.gamma * self.target_critic(next_states, self.target_actor(next_states)) * (1 - done)
 
         current_Q = self.critic(states, actions)
         actor_loss = -self.critic(states, self.actor(states)).mean()

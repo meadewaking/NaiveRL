@@ -1,6 +1,6 @@
 config = {
 
-    'env_name': 'CartPole-v0',
+    'env_name': 'CartPole-v1',
     'act_dim': 2,
     'state_dim': 4,
 

@@ -16,7 +16,7 @@ class Alg():
     def learn(self, states, actions, rewards):
         R = 0
         dis_r = []
-        for r in rewards:
+        for r in rewards[::-1]:
             R = r + self.gamma * R
             dis_r.append(R)
         dis_r.reverse()

@@ -8,22 +8,21 @@ class Agent():
         self.alg = algorithm
 
     def sample(self, state):
-        state = torch.tensor(state, device=self.device, dtype=torch.float)
+        state = torch.as_tensor(np.asarray(state), device=self.device, dtype=torch.float)
         action = self.alg.sample(state)
         return action
 
     def predict(self, state):
-        state = torch.tensor(state, device=self.device, dtype=torch.float)
+        state = torch.as_tensor(np.asarray(state), device=self.device, dtype=torch.float)
         action = self.alg.predict(state)
         return action
 
     def learn(self, states, actions, rewards, s_, done):
-        states = torch.tensor(states, device=self.device, dtype=torch.float)
+        states = torch.as_tensor(np.asarray(states), device=self.device, dtype=torch.float)
         actions = np.expand_dims(actions, 1)
-        actions = torch.tensor(actions, device=self.device, dtype=torch.long)
-        rewards = np.expand_dims(rewards, 1)
-        rewards = torch.tensor(np.array(rewards), device=self.device, dtype=torch.float).squeeze()
-        s_ = torch.tensor(s_, device=self.device, dtype=torch.float)
+        actions = torch.as_tensor(actions, device=self.device, dtype=torch.long)
+        rewards = torch.as_tensor(np.asarray(rewards), device=self.device, dtype=torch.float).view(-1)
+        s_ = torch.as_tensor(np.asarray(s_), device=self.device, dtype=torch.float)
         
         loss = self.alg.learn(states, actions, rewards, s_, done)
         return loss.item()
